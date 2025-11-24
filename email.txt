@@ -1,0 +1,95 @@
+STEP 1 — Install Email Extension Plugin
+
+Open Jenkins Dashboard
+
+Go to Manage Jenkins
+
+Click Manage Plugins
+
+Go to Available
+
+Search: Email Extension Plugin
+
+Tick → Email Extension Plugin
+
+Click Install → Restart Jenkins
+
+STEP 2 — Configure SMTP Server (Global Configuration)
+Go to:
+
+Manage Jenkins → System
+
+Scroll to Email Notification
+
+Fill these:
+
+Field	Value
+SMTP server	smtp.gmail.com (or your mail server)
+Use SMTP Authentication	✔️
+Username	your Gmail / SMTP email
+Password	App password (NOT Gmail password)
+Use SSL	✔️
+Port	465
+
+➡️ If using Gmail, you MUST use App Password
+(From manage “App passwords” → Generate 16-digit code)
+
+Click Test configuration → Enter your email → Test.
+
+If you receive test email → SMTP is working.
+
+STEP 3 — Configure Extended Email Notification (Better option)
+
+Scroll down to Extended E-mail Notification
+Fill these:
+
+Field	Value
+SMTP server	smtp.gmail.com
+Default user e-mail suffix	@gmail.com
+SMTP port	465
+Use SSL	✔️
+Credentials	Select saved credentials
+
+Click Apply → Save
+
+STEP 4 — Add Email Step Inside Jenkins Pipeline
+
+In your pipeline script, add:
+
+📌 For success/failure notification
+post {
+    success {
+        emailext(
+            subject: "Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: "Good news! The build completed successfully.",
+            to: "yourmail@example.com"
+        )
+    }
+    failure {
+        emailext(
+            subject: "Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: "Something went wrong. Please check Jenkins.",
+            to: "yourmail@example.com"
+        )
+    }
+}
+
+STEP 5 — Run the Pipeline
+
+Trigger the build.
+
+After success or failure, Jenkins will send an email.
+
+STEP 6 — Verify Email Received
+
+If you don’t receive email:
+
+Check Jenkins console logs
+
+Check spam folder
+
+Ensure App Password is correct
+
+Ensure outgoing port is not blocked
+
+✔️ Done! Email notifications are now enabled.
