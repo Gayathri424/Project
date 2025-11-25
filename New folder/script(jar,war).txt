@@ -53,3 +53,103 @@ pipeline {
         }
     }
 }
+
+
+//java + webhook
+pipeline {
+    agent any
+    
+    tools {
+        maven 'MAVEN_HOME'
+    }
+
+    triggers {
+        githubPush()   // GitHub Webhook Trigger
+    }
+
+    stages {
+
+        stage('Clone Code') {
+            steps {
+                echo "Cloning Java Project..."
+                git branch: 'main',
+                    url: 'https://github.com/Gayathri424/SampleMavenJavaproject.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Running Maven Build..."
+                bat 'mvn clean install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running Tests..."
+                bat 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo "Packaging..."
+                bat 'mvn package'
+            }
+        }
+
+        stage('Success') {
+            steps {
+                echo "BUILD SUCCESS — Triggered by GitHub Webhook!"
+            }
+        }
+    }
+}
+
+
+//web maven
+
+pipeline {
+    agent any
+    
+    tools {
+        maven 'MAVEN_HOME'
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/Gayathri424/samplemavenweb.git'
+            }
+        }
+
+        stage('Build WAR') {
+            steps {
+                bat "mvn clean package"
+            }
+        }
+
+        stage('Archive WAR') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.war', fingerprint: true
+            }
+        }
+
+        stage('Deploy to Tomcat') {
+    steps {
+        bat '''
+            echo Copying WAR file...
+            copy target\\*.war "C:\\Users\\velis\\apache-tomcat-9.0.100\\webapps\\" /Y
+
+            echo Stopping Tomcat...
+            C:\\Users\\velis\\apache-tomcat-9.0.100\\bin\\shutdown.bat
+
+            timeout /t 5 > nul
+
+            echo Starting Tomcat...
+            C:\\Users\\velis\\apache-tomcat-9.0.100\\bin\\startup.bat
+        '''
+    }
+}
+
